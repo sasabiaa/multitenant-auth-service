@@ -73,10 +73,10 @@ public class UserServiceImpl implements UserService {
 
         User user = userRepository.findByEmailOrUsername(
                         request.getEmailOrUsername(), request.getEmailOrUsername())
-                .orElseThrow(() -> new BadRequestException("Email/Username atau password salah"));
+                .orElseThrow(() -> new BadRequestException("Wrong Email/Username or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadRequestException("Email/Username atau password salah");
+            throw new BadRequestException("Wrong Email/Username or password");
         }
 
         String token = jwtService.generateToken(user);
