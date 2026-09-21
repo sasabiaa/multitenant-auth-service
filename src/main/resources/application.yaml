@@ -11,10 +11,14 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
 server:
   port: "${SERVER_PORT:8080}"
