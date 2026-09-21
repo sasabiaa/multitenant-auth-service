@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.project.multitenantauthservice.entity.User;
 import org.project.multitenantauthservice.entity.UserRole;
+import org.project.multitenantauthservice.entity.dto.request.AuthRequest;
 import org.project.multitenantauthservice.entity.dto.request.UserRequest;
+import org.project.multitenantauthservice.entity.dto.response.AuthResponse;
 import org.project.multitenantauthservice.entity.dto.response.UserResponse;
 import org.project.multitenantauthservice.exception.BadRequestException;
 import org.project.multitenantauthservice.repository.UserRepository;
+import org.project.multitenantauthservice.service.JwtService;
 import org.project.multitenantauthservice.service.UserService;
 import org.project.multitenantauthservice.util.ValidationUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +26,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public UserResponse createUser(UserRequest request) {
@@ -64,4 +68,23 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public AuthResponse login(AuthRequest request) {
+
+        User user = userRepository.findByEmailOrUsername(
+                        request.getEmailOrUsername(), request.getEmailOrUsername())
+                .orElseThrow(() -> new BadRequestException("Email/Username atau password salah"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadRequestException("Email/Username atau password salah");
+        }
+
+        String token = jwtService.generateToken(user);
+
+        return AuthResponse.builder()
+                .token(token)
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .build();
+    }
 }
