@@ -11,10 +11,10 @@ spring:
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
 
 server:
-  port: 8082
+  port: "${SERVER_PORT:8080}"
