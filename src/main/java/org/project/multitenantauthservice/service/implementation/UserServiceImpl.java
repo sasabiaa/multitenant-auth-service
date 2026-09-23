@@ -13,9 +13,11 @@ import org.project.multitenantauthservice.repository.UserRepository;
 import org.project.multitenantauthservice.service.JwtService;
 import org.project.multitenantauthservice.service.UserService;
 import org.project.multitenantauthservice.util.ValidationUtil;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Optional;
 
 
@@ -27,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Override
     public UserResponse createUser(UserRequest request) {
@@ -79,7 +82,23 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Wrong Email/Username or password");
         }
 
-        String token = jwtService.generateToken(user);
+        String token;
+
+        try {
+            token = stringRedisTemplate.opsForValue().get(user.getUsername());
+        } catch (Exception e) {
+            log.warn("Redis unavailable, falling back to generate new token", e);
+            token = null;
+        }
+
+        if (token == null) {
+            token = jwtService.generateToken(user);
+            try {
+                stringRedisTemplate.opsForValue().set(user.getUsername(), token, Duration.ofDays(7));
+            } catch (Exception e) {
+                log.warn("Failed to cache token in Redis", e);
+            }
+        }
 
         return AuthResponse.builder()
                 .token(token)
