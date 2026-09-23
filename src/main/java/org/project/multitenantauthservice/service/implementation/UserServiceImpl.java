@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.Optional;
 
+import static org.project.multitenantauthservice.util.Common.REDIS_EXPIRED;
+
 
 @Slf4j
 @Service
@@ -94,7 +96,7 @@ public class UserServiceImpl implements UserService {
         if (token == null) {
             token = jwtService.generateToken(user);
             try {
-                stringRedisTemplate.opsForValue().set(user.getUsername(), token, Duration.ofDays(7));
+                stringRedisTemplate.opsForValue().set(user.getUsername(), token, Duration.ofDays(REDIS_EXPIRED));
             } catch (Exception e) {
                 log.warn("Failed to cache token in Redis", e);
             }
