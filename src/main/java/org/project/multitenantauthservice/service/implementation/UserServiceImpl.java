@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
                 || !ValidationUtil.isValidUsername(request.getUsername())
                 || !ValidationUtil.isValidPassword(request.getPassword())) {
             log.error("Invalid format");
-            throw new BadRequestException("Data input tidak valid");
+            throw new BadRequestException("Invalid data");
         }
 
         Optional<User> existing = userRepository.findByEmailOrUsername(
@@ -46,11 +46,11 @@ public class UserServiceImpl implements UserService {
         if (existing.isPresent()) {
             User existingUser = existing.get();
             if (existingUser.getEmail().equalsIgnoreCase(request.getUserEmail())) {
-                log.error("Email already used");
-                throw new BadRequestException("Email sudah terdaftar");
+                log.error("Email already used. Email used: {}", request.getUserEmail());
+                throw new BadRequestException("Email already used");
             }
-            log.error("Username already used");
-            throw new BadRequestException("Username sudah digunakan");
+            log.error("Username already used. Username used: {}", request.getUsername());
+            throw new BadRequestException("Username already use");
         }
 
         User user = User.builder()
