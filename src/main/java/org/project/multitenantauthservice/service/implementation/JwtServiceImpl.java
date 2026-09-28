@@ -29,18 +29,20 @@ public class JwtServiceImpl implements JwtService {
 
     public String generateToken(User user){
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", user.getId());
-        claims.put("email", user.getEmail());
-        claims.put("role", user.getRole().name());
 
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + expirationMs);
+        claims.put("user_id", user.getId());
+        claims.put("plan", user.getPlan());
+        claims.put("plan_status", user.getPlanStatus() != null ? user.getPlanStatus().name() : "ACTIVE");
+
+        if (user.getRole() != null) {
+            claims.put("authorities", user.getRole().name());
+        }
 
         return Jwts.builder()
                 .claims(claims)
                 .subject(user.getUsername())
-                .issuedAt(now)
-                .expiration(expiry)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) //24 jam
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

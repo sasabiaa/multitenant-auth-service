@@ -28,6 +28,10 @@ public class User {
 
     private String password;
 
+    private String plan;
+
+    private PlanStatus planStatus;
+
     private UserRole role;
 
     @CreationTimestamp

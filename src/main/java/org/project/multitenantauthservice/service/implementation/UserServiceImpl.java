@@ -2,6 +2,7 @@ package org.project.multitenantauthservice.service.implementation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.project.multitenantauthservice.entity.PlanStatus;
 import org.project.multitenantauthservice.entity.User;
 import org.project.multitenantauthservice.entity.UserRole;
 import org.project.multitenantauthservice.entity.dto.request.AuthRequest;
@@ -59,6 +60,8 @@ public class UserServiceImpl implements UserService {
                 .username(request.getUsername())
                 .email(request.getUserEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .plan("FREE")
+                .planStatus(PlanStatus.ACTIVE)
                 .role(UserRole.USER_MEMBER)
                 .build();
 
@@ -106,6 +109,8 @@ public class UserServiceImpl implements UserService {
                 .token(token)
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .plan(user.getPlan())
+                .planStatus(user.getPlanStatus().name())
                 .build();
     }
 }
