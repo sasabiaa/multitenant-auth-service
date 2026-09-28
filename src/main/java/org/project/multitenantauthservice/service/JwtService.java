@@ -7,4 +7,5 @@ public interface JwtService {
     String generateToken(User user);
     String extractUsername(String token);
     boolean isTokenValid(String token, String username);
+    String generateRefreshToken(User user);
 }

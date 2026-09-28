@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.project.multitenantauthservice.entity.ApiResponse;
 import org.project.multitenantauthservice.entity.dto.request.AuthRequest;
+import org.project.multitenantauthservice.entity.dto.request.RefreshTokenRequest;
 import org.project.multitenantauthservice.entity.dto.request.UserRequest;
 import org.project.multitenantauthservice.entity.dto.response.AuthResponse;
+import org.project.multitenantauthservice.entity.dto.response.RefreshResponse;
 import org.project.multitenantauthservice.entity.dto.response.UserResponse;
 import org.project.multitenantauthservice.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -40,12 +42,23 @@ public class UserController {
         AuthResponse authResponse = userService.login(request);
 
         ApiResponse<AuthResponse> response = ApiResponse.<AuthResponse>builder()
-                .message("Login berhasil")
+                .message("Login successfully")
                 .data(authResponse)
                 .status("success")
                 .timestamp(Instant.now())
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<RefreshResponse>> refreshToken(@RequestBody RefreshTokenRequest request) {
+        RefreshResponse response = userService.refreshToken(request);
+        return ResponseEntity.ok(ApiResponse.<RefreshResponse>builder()
+                .status("success")
+                .message("Token refreshed successfully")
+                .data(response)
+                .timestamp(Instant.now())
+                .build());
     }
 }

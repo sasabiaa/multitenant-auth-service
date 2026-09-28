@@ -20,8 +20,9 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.token}")
     private String secretToken;
 
-    @Value("${jwt.expiration}")
-    private long expirationMs;
+
+    private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 15;
+    private static final long REFRESH_TOKEN_EXPIRATION = 1000L * 60 * 60 * 24 * 7;
 
     private SecretKey getSigningKey(){
         return Keys.hmacShaKeyFor(secretToken.getBytes());
@@ -38,11 +39,19 @@ public class JwtServiceImpl implements JwtService {
             claims.put("authorities", user.getRole().name());
         }
 
+        return buildToken(claims, user.getUsername(), ACCESS_TOKEN_EXPIRATION);
+    }
+
+    public String generateRefreshToken(User user) {
+        return buildToken(new HashMap<>(), user.getUsername(), REFRESH_TOKEN_EXPIRATION);
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, String subject, long expiration) {
         return Jwts.builder()
-                .claims(claims)
-                .subject(user.getUsername())
+                .claims(extraClaims)
+                .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) //24 jam
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

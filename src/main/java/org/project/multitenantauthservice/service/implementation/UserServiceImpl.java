@@ -6,8 +6,10 @@ import org.project.multitenantauthservice.entity.PlanStatus;
 import org.project.multitenantauthservice.entity.User;
 import org.project.multitenantauthservice.entity.UserRole;
 import org.project.multitenantauthservice.entity.dto.request.AuthRequest;
+import org.project.multitenantauthservice.entity.dto.request.RefreshTokenRequest;
 import org.project.multitenantauthservice.entity.dto.request.UserRequest;
 import org.project.multitenantauthservice.entity.dto.response.AuthResponse;
+import org.project.multitenantauthservice.entity.dto.response.RefreshResponse;
 import org.project.multitenantauthservice.entity.dto.response.UserResponse;
 import org.project.multitenantauthservice.exception.BadRequestException;
 import org.project.multitenantauthservice.repository.UserRepository;
@@ -111,6 +113,24 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .plan(user.getPlan())
                 .planStatus(user.getPlanStatus().name())
+                .build();
+    }
+
+    public RefreshResponse refreshToken(RefreshTokenRequest request) {
+        String username = jwtService.extractUsername(request.getRefreshToken());
+
+        User user = userRepository.findByUsername(username);
+
+        if (!jwtService.isTokenValid(request.getRefreshToken(), user.getUsername())) {
+            throw new RuntimeException("Refresh token is invalid or expired");
+        }
+
+        String newAccessToken = jwtService.generateToken(user);
+        String newRefreshToken = jwtService.generateRefreshToken(user);
+
+        return RefreshResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
                 .build();
     }
 }
